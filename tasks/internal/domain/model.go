@@ -38,7 +38,7 @@ type TaskUseCase interface {
 }
 
 type TasksRepo interface {
-	Create(ctx context.Context, t *Task) (int64, error)
+	Create(ctx context.Context, t *Task) (int, error)
 	Update(ctx context.Context, t *Task) error
 	GetById(ctx context.Context, id string) (*Task, error)
 	GetListId(ctx context.Context) ([]Task, error)
