@@ -56,6 +56,14 @@ func NewTask(title, desc, requestUser, createUser string, priopity, queueId int3
 	}, nil
 }
 
+func (t *Task) ClearOwner() error {
+	if err := t.ValidTasksToUpdate(); err != nil {
+		return err
+	}
+	t.Owner = ""
+	return nil
+}
+
 func (t *Task) TaskToQueue(newQueueId int32) error {
 	if err := t.ValidTasksToUpdate(); err != nil {
 		return err
@@ -64,12 +72,9 @@ func (t *Task) TaskToQueue(newQueueId int32) error {
 	return nil
 }
 
-func (t *Task) PostponedTasks(datePostponed time.Time, userSave bool) error{
+func (t *Task) PostponedTasks(datePostponed time.Time) error {
 	if err := t.ValidTasksToUpdate(); err != nil {
 		return err
-	}
-	if !userSave{
-		t.Owner = ""
 	}
 	t.Status = Postponed
 	t.PostponedDate = &datePostponed
@@ -80,7 +85,8 @@ func (t *Task) CancelledTasl(user string) error {
 	if err := t.ValidTasksToUpdate(); err != nil {
 		return err
 	}
-	*t.CompletedAt = time.Now()
+	dateNow := time.Now()
+	t.CompletedAt = &dateNow
 	t.CompletedUser = user
 	t.Owner = ""
 	t.Status = Cancelled
@@ -91,7 +97,8 @@ func (t *Task) CompletedTask(user string) error {
 	if err := t.ValidTasksToUpdate(); err != nil {
 		return err
 	}
-	*t.CompletedAt = time.Now()
+	timeNow := time.Now()
+	t.CompletedAt = &timeNow
 	t.CompletedUser = user
 	t.Owner = ""
 	t.Status = Completed
