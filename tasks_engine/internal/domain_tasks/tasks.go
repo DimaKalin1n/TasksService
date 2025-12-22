@@ -1,10 +1,10 @@
-package domaintasks
+package domain_tasks
 
 import (
 	"time"
-
-	"github.com/DimaKalin1n/TasksService/internal/errors_service"
 )
+
+type QueueIdType int32
 
 type TaskStatus string
 
@@ -30,18 +30,18 @@ type Task struct {
 	Description   string
 	RequesterUser string
 	CreateUser    string
-	QueueId       int32
+	QueueId       QueueIdType
 }
 
-func NewTask(title, desc, requestUser, createUser string, priopity, queueId int32) (*Task, error) {
+func NewTask(title, desc, requestUser, createUser string, priopity int32, queueId QueueIdType) (*Task, error) {
 	if title == "" || desc == "" || requestUser == "" || createUser == "" {
-		return nil, errors_service.ErrorBadParams
+		return nil, ErrorBadParams
 	}
 	if priopity < 0 {
-		return nil, errors_service.ErrorPriority
+		return nil, ErrorPriority
 	}
 	if queueId == 0 {
-		return nil, errors_service.ErrorNotFoundQueue
+		return nil, ErrorNotFoundQueue
 	}
 
 	return &Task{
@@ -64,7 +64,7 @@ func (t *Task) ClearOwner() error {
 	return nil
 }
 
-func (t *Task) TaskToQueue(newQueueId int32) error {
+func (t *Task) TaskToQueue(newQueueId QueueIdType) error {
 	if err := t.ValidTasksToUpdate(); err != nil {
 		return err
 	}
@@ -110,7 +110,7 @@ func (t *Task) TakeInProgress(user string) error {
 		return err
 	}
 	if t.Status == InProgress {
-		return errors_service.ErrorTaskInProgres
+		return ErrorTaskInProgres
 	}
 	t.Status = InProgress
 	t.Owner = user
@@ -127,7 +127,7 @@ func (t *Task) UpdateOwner(user string) error {
 
 func (t *Task) ValidTasksToUpdate() error {
 	if t.Status == Completed || t.Status == Cancelled {
-		return errors_service.ErrorTaskFinallStatus
+		return ErrorTaskFinallStatus
 	}
 	return nil
 }

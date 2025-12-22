@@ -1,4 +1,4 @@
-package errors_service
+package domain_tasks
 
 import "errors"
 
