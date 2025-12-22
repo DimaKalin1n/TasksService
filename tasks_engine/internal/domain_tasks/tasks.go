@@ -69,6 +69,7 @@ func (t *Task) TaskToQueue(newQueueId QueueIdType) error {
 		return err
 	}
 	t.QueueId = newQueueId
+	t.Status = Queued
 	return nil
 }
 
@@ -81,7 +82,7 @@ func (t *Task) PostponedTasks(datePostponed time.Time) error {
 	return nil
 }
 
-func (t *Task) CancelledTasl(user string) error {
+func (t *Task) CancelledTask(user string) error {
 	if err := t.ValidTasksToUpdate(); err != nil {
 		return err
 	}
