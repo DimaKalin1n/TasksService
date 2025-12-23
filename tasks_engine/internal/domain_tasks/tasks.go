@@ -1,6 +1,7 @@
 package domain_tasks
 
 import (
+	"errors"
 	"time"
 )
 
@@ -19,6 +20,7 @@ const (
 
 type Task struct {
 	// id - Данное поле генерируется в БД
+	ID            int32
 	Status        TaskStatus
 	Owner         string
 	CompletedUser string
@@ -67,6 +69,9 @@ func (t *Task) ClearOwner() error {
 func (t *Task) TaskToQueue(newQueueId QueueIdType) error {
 	if err := t.ValidTasksToUpdate(); err != nil {
 		return err
+	}
+	if newQueueId == 0 {
+		return errors.New("Queue not found")
 	}
 	t.QueueId = newQueueId
 	t.Status = Queued

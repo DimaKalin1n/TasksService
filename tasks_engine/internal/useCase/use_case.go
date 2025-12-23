@@ -20,8 +20,7 @@ type (
 	TaskRepo interface {
 		SaveTask(ctx context.Context, task *domain_tasks.Task) error
 		GetTasksById(ctx context.Context, id int32) (*domain_tasks.Task, error)
-		UpdateTasks(ctx context.Context, t *domain_tasks.Task) error
-		SearchTasks(ctx context.Context, t TasksSearchStruct) ([]domain_tasks.Task, error)
+		SearchTasks(ctx context.Context, tS TasksSearchStruct) ([]*domain_tasks.Task, error)
 	}
 
 	TaskUseCase struct {
@@ -35,7 +34,7 @@ func NewTaskUseCase(repo TaskRepo) *TaskUseCase {
 	}
 }
 
-func (usc TaskUseCase) CreateTasks(ctx context.Context, title, desc, creatUser, requestUser string, priop int32, queueId domain_tasks.QueueIdType) (*domain_tasks.Task, error) {
+func (usc TaskUseCase) CreateTask(ctx context.Context, title, desc, creatUser, requestUser string, priop int32, queueId domain_tasks.QueueIdType) (*domain_tasks.Task, error) {
 	task, err := domain_tasks.NewTask(
 		title, desc, requestUser, creatUser, priop, queueId,
 	)
@@ -50,7 +49,7 @@ func (usc TaskUseCase) CreateTasks(ctx context.Context, title, desc, creatUser, 
 	return task, nil
 }
 
-func (usc TaskUseCase) CompletedTasks(ctx context.Context, id int32, user string) error {
+func (usc TaskUseCase) CompletedTask(ctx context.Context, id int32, user string) error {
 	task, err := usc.repo.GetTasksById(ctx, id)
 	if err != nil {
 		return err
@@ -59,14 +58,14 @@ func (usc TaskUseCase) CompletedTasks(ctx context.Context, id int32, user string
 		return errCompl
 	}
 
-	if errComplTasks := usc.repo.UpdateTasks(ctx, task); errComplTasks != nil {
+	if errComplTasks := usc.repo.SaveTask(ctx, task); errComplTasks != nil {
 		return errComplTasks
 	}
 	return nil
 
 }
 
-func (usc TaskUseCase) CancellTasks(ctx context.Context, id int32, user string) error {
+func (usc TaskUseCase) CancellTask(ctx context.Context, id int32, user string) error {
 	task, err := usc.repo.GetTasksById(ctx, id)
 	if err != nil {
 		return err
@@ -75,14 +74,14 @@ func (usc TaskUseCase) CancellTasks(ctx context.Context, id int32, user string) 
 		return errCompl
 	}
 
-	if errComplTasks := usc.repo.UpdateTasks(ctx, task); errComplTasks != nil {
+	if errComplTasks := usc.repo.SaveTask(ctx, task); errComplTasks != nil {
 		return errComplTasks
 	}
 	return nil
 
 }
 
-func (usc TaskUseCase) ClearOwnerOnTasks(ctx context.Context, id int32) error {
+func (usc *TaskUseCase) ClearOwnerOnTask(ctx context.Context, id int32) error {
 	task, err := usc.repo.GetTasksById(ctx, id)
 	if err != nil {
 		return nil
@@ -92,16 +91,25 @@ func (usc TaskUseCase) ClearOwnerOnTasks(ctx context.Context, id int32) error {
 	if errOwner != nil {
 		return errOwner
 	}
+
+	if err := usc.repo.SaveTask(ctx, task); err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func (usc TaskUseCase) TasksToQueue(ctx context.Context, id int32, queueId domain_tasks.QueueIdType) error {
+func (usc *TaskUseCase) TasksToQueue(ctx context.Context, id int32, queueId domain_tasks.QueueIdType) error {
 	task, err := usc.repo.GetTasksById(ctx, id)
 	if err != nil {
 		return err
 	}
 	if errToQueue := task.TaskToQueue(queueId); errToQueue != nil {
 		return errToQueue
+	}
+
+	if err := usc.repo.SaveTask(ctx, task); err != nil {
+		return err
 	}
 
 	return nil
