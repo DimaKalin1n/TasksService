@@ -35,6 +35,18 @@ type Task struct {
 	QueueId       QueueIdType
 }
 
+func (t *Task) GetId() int32 {
+	return t.ID
+}
+
+func (t *Task) SetId(newId int32) error {
+	if t.GetId() == 0 {
+		t.ID = newId
+		return nil
+	}
+	return errors.New("Bad req id")
+}
+
 func NewTask(title, desc, requestUser, createUser string, priopity int32, queueId QueueIdType) (*Task, error) {
 	if title == "" || desc == "" || requestUser == "" || createUser == "" {
 		return nil, ErrorBadParams
